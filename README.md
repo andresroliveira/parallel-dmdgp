@@ -17,13 +17,12 @@ For each bitmask `k` with `m = n-3` bits:
 
 - Bit `(n - t)` determines the **sign of** `sin(omega[t])` for `t = 4..n`.
 - `h(k)` builds an embedding (points in `R^3`) using a 4×4 homogeneous transform chain.
-- `g(h(k))` scores constraint violations using **no square roots**:
-  \[
-    g(x) = \sum_{(u,v,d)\in E} (\|x_u-x_v\|^2 - d^2)^2
-  \]
+- `g(h(k))` scores constraint violations:
+
+$$ g(x) = \sum_{(u,v,d_{u,v})\in E} (\|x_u-x_v\|^2 - d_{u,v}^2)^2 $$
 - We search for any mask such that `g(h(k)) <= delta`.
 
-This repository currently returns the **first found** solution (not necessarily the smallest `k`), optimized for speed.
+This repository currently returns the **first found** solution `k`.
 
 ---
 
@@ -129,7 +128,7 @@ OMP_PROC_BIND=true OMP_PLACES=cores OMP_NUM_THREADS=10 ./build/search data/30_16
   - `bond[k] = d(k-1,k)`
   - `cos(theta[k])`, `sin(theta[k])`
   - `cos(omega[k])` and `|sin(omega[k])|`
-  - (optionally) per-`k` transform matrices `A_plus[t]` / `A_minus[t]` for `t>=4`
+  - per-`k` transform matrices `A_plus[t]` / `A_minus[t]` for `t>=4`
 
 Because the search returns the first found solution, runtime can vary depending on scheduling and when the solution’s chunk is evaluated.
 
