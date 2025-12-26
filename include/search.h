@@ -6,7 +6,7 @@
 
 typedef struct {
     int found;          // 1 if found
-    uint64_t k;         // smallest valid k
+    uint64_t k;         // valid k
     double g;           // g(h(k))
 } SearchResult;
 
