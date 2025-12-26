@@ -1,18 +1,34 @@
 CC := cc
-CFLAGS := -O3 -march=native -std=c11 -Wall -Wextra -Iinclude
+CFLAGS := -O3 -march=native -std=c11 -Wall -Wextra -Iinclude -fopenmp
 LDFLAGS := -lm
 
-SRC := src/main.c src/instance.c
-OBJ := $(SRC:.c=.o)
+BUILD := build
 
-all: precompute
+COMMON_SRC := src/instance.c src/mat4.c src/geom_mat4.c src/score.c src/search_omp.c
+COMMON_OBJ := $(COMMON_SRC:src/%.c=$(BUILD)/%.o)
 
-precompute: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS)
+all: $(BUILD)/precompute $(BUILD)/points $(BUILD)/search
 
-debug: CFLAGS := -O0 -g -std=c11 -Wall -Wextra -Iinclude -fsanitize=address,undefined
+$(BUILD):
+	mkdir -p $(BUILD)
+
+$(BUILD)/%.o: src/%.c | $(BUILD)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILD)/precompute: $(BUILD)/precompute_main.o $(COMMON_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(BUILD)/points: $(BUILD)/points_main.o $(COMMON_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(BUILD)/search: $(BUILD)/search_main.o $(COMMON_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+debug: CFLAGS := -O0 -g -std=c11 -Wall -Wextra -Iinclude -fopenmp -fsanitize=address,undefined
 debug: LDFLAGS := -lm -fsanitize=address,undefined
-debug: clean precompute
+debug: clean all
 
 clean:
-	rm -f $(OBJ) precompute
+	rm -rf $(BUILD)
+
+.PHONY: all debug clean
