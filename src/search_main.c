@@ -1,4 +1,4 @@
-#include "geom.h"
+// #include "geom.h"
 #include "instance.h"
 #include "search.h"
 
@@ -48,11 +48,11 @@ int main(int argc, char **argv) {
            R.g, delta);
 
     // print points for the found k (helps debugging)
-    Vec3 *x = calloc((size_t)I.n + 1, sizeof(Vec3));
-    geom_build_points_mat4(&I, R.k, x);
-    for (int i = 1; i <= I.n; i++)
-        printf("%d %.12f %.12f %.12f\n", i, x[i].x, x[i].y, x[i].z);
-    free(x);
+    // Vec3 *x = calloc((size_t)I.n + 1, sizeof(Vec3));
+    // geom_build_points_mat4(&I, R.k, x);
+    // for (int i = 1; i <= I.n; i++)
+    //     printf("%d %.12f %.12f %.12f\n", i, x[i].x, x[i].y, x[i].z);
+    // free(x);
 
     instance_free(&I);
     return 0;

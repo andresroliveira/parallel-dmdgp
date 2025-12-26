@@ -3,13 +3,11 @@
 #include "search.h"
 
 #include <omp.h>
+#include <stdatomic.h>
 #include <stdlib.h>
 
 SearchResult search_first_k_omp(const Instance *I, double delta) {
-    SearchResult R;
-    R.found = 0;
-    R.k = 0;
-    R.g = 0.0;
+    SearchResult R = {0, 0, 0.0};
 
     const int n = I->n;
     const int m_bits = n - 3;
@@ -18,8 +16,11 @@ SearchResult search_first_k_omp(const Instance *I, double delta) {
 
     const uint64_t total = 1ULL << m_bits;
 
-    // Shared flag and result
-    int found = 0;
+    // Shared "found" flag with atomic visibility
+    atomic_int found;
+    atomic_init(&found, 0);
+
+    // Shared result (written once under critical)
     uint64_t found_k = 0;
     double found_g = 0.0;
 
@@ -27,26 +28,29 @@ SearchResult search_first_k_omp(const Instance *I, double delta) {
     {
         Vec3 *x = (Vec3 *)malloc(((size_t)n + 1) * sizeof(Vec3));
         if (!x) {
-            // if allocation fails, do nothing
+            // skip thread if allocation fails
         } else {
 #pragma omp for schedule(dynamic, 1024)
             for (uint64_t k = 0; k < total; k++) {
 
-                // Early exit check (benign race; OK)
-                if (found)
+                // If someone already found, stop doing work
+                if (atomic_load_explicit(&found, memory_order_relaxed)) {
                     continue;
+                }
 
                 geom_build_points_mat4(I, k, x);
                 double g = score_g_no_sqrt(I, x);
 
                 if (g <= delta) {
-// Try to publish result once
+// Publish exactly once
 #pragma omp critical
                     {
-                        if (!found) {
-                            found = 1;
+                        if (!atomic_load_explicit(&found,
+                                                  memory_order_relaxed)) {
                             found_k = k;
                             found_g = g;
+                            atomic_store_explicit(&found, 1,
+                                                  memory_order_relaxed);
                         }
                     }
                 }
@@ -55,10 +59,11 @@ SearchResult search_first_k_omp(const Instance *I, double delta) {
         }
     }
 
-    if (found) {
+    if (atomic_load_explicit(&found, memory_order_relaxed)) {
         R.found = 1;
         R.k = found_k;
         R.g = found_g;
     }
+
     return R;
 }
