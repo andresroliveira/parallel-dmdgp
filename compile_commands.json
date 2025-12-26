@@ -1,0 +1,38 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-O3",
+      "-march=native",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "src/main.o",
+      "src/main.c"
+    ],
+    "directory": "/home/andres/Projects/Parallel",
+    "file": "/home/andres/Projects/Parallel/src/main.c",
+    "output": "/home/andres/Projects/Parallel/src/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-O3",
+      "-march=native",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "src/instance.o",
+      "src/instance.c"
+    ],
+    "directory": "/home/andres/Projects/Parallel",
+    "file": "/home/andres/Projects/Parallel/src/instance.c",
+    "output": "/home/andres/Projects/Parallel/src/instance.o"
+  }
+]
