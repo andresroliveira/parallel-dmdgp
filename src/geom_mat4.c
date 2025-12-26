@@ -69,52 +69,18 @@ void geom_build_points_mat4(const Instance *I, uint64_t k, Vec3 *x_out) {
 
     // Iterate atoms t=4..n
     for (int t = 4; t <= n; t++) {
-        // Match Python bit convention:
-        // if i & (1 << (n-t)) == 0 => sgn=0 => sw = (+)abs_sw
-        // else => sw = (-)abs_sw
+        // Match bit convention:
+        // bit index for atom t is (n - t)
         int bit_index = n - t;
         uint64_t bit = (k >> bit_index) & 1ULL;
 
-        double ct_t = I->ctheta[t];
-        double st_t = I->stheta[t];
-        double di_t = I->bond[t];
+        // Select precomputed A matrix depending on sign of sin(omega)
+        const Mat4 *A = bit ? &I->A_minus[t] : &I->A_plus[t];
 
-        double cw = I->cw[t];
-        double abs_sw = I->abs_sw[t];
-        double sw = bit ? -abs_sw : +abs_sw;
+        Mat4 C;
+        mat4_mul(&B, A, &C);
 
-        Mat4 A, C;
-        mat4_identity(&A);
-        mat4_identity(&C);
-
-        // A = [[-ct, -st, 0, -di*ct],
-        //      [ st*cw, -ct*cw, -sw, di*st*cw],
-        //      [ st*sw, -ct*sw,  cw, di*st*sw],
-        //      [ 0, 0, 0, 1 ]]
-        A.a[0][0] = -ct_t;
-        A.a[0][1] = -st_t;
-        A.a[0][2] = 0.0;
-        A.a[0][3] = -di_t * ct_t;
-        A.a[1][0] = st_t * cw;
-        A.a[1][1] = -ct_t * cw;
-        A.a[1][2] = -sw;
-        A.a[1][3] = di_t * st_t * cw;
-        A.a[2][0] = st_t * sw;
-        A.a[2][1] = -ct_t * sw;
-        A.a[2][2] = cw;
-        A.a[2][3] = di_t * st_t * sw;
-        A.a[3][0] = 0.0;
-        A.a[3][1] = 0.0;
-        A.a[3][2] = 0.0;
-        A.a[3][3] = 1.0;
-
-        // C = B * A
-        mat4_mul(&B, &A, &C);
-
-        // position is translation part of C
         x_out[t] = mat4_position(&C);
-
-        // B = C
-        mat4_copy(&B, &C);
+        mat4_copy_inline(&B, &C);
     }
 }

@@ -37,6 +37,13 @@ static int alloc_mats(Instance *I) {
     if (!I->dist || !I->has || !I->theta || !I->cw || !I->abs_sw ||
         !I->ctheta || !I->stheta || !I->bond)
         return 0;
+
+    I->A_plus = (Mat4 *)calloc((size_t)(n + 1), sizeof(Mat4));
+    I->A_minus = (Mat4 *)calloc((size_t)(n + 1), sizeof(Mat4));
+
+    if (!I->A_plus || !I->A_minus)
+        return 0;
+
     return 1;
 }
 
@@ -219,6 +226,39 @@ int instance_precompute(Instance *I) {
         I->abs_sw[k] = sqrt(sw2);
     }
 
+    // Precompute A_plus/A_minus for t=4..n (matches geom_mat4 A construction)
+    for (int t = 4; t <= n; t++) {
+        double ct = I->ctheta[t];
+        double st = I->stheta[t];
+        double di = I->bond[t];
+
+        double cw = I->cw[t];
+        double sw_abs = I->abs_sw[t];
+
+        // helper lambda-ish: fill A given sw
+        for (int which = 0; which < 2; which++) {
+            double sw = (which == 0) ? +sw_abs : -sw_abs; // 0=plus, 1=minus
+            Mat4 *A = (which == 0) ? &I->A_plus[t] : &I->A_minus[t];
+
+            // We only touch all entries explicitly; no need identity.
+            A->a[0][0] = -ct;
+            A->a[0][1] = -st;
+            A->a[0][2] = 0.0;
+            A->a[0][3] = -di * ct;
+            A->a[1][0] = st * cw;
+            A->a[1][1] = -ct * cw;
+            A->a[1][2] = -sw;
+            A->a[1][3] = di * st * cw;
+            A->a[2][0] = st * sw;
+            A->a[2][1] = -ct * sw;
+            A->a[2][2] = cw;
+            A->a[2][3] = di * st * sw;
+            A->a[3][0] = 0.0;
+            A->a[3][1] = 0.0;
+            A->a[3][2] = 0.0;
+            A->a[3][3] = 1.0;
+        }
+    }
     return 1;
 }
 
@@ -234,5 +274,7 @@ void instance_free(Instance *I) {
     free(I->ctheta);
     free(I->stheta);
     free(I->bond);
+    free(I->A_plus);
+    free(I->A_minus);
     memset(I, 0, sizeof(*I));
 }
