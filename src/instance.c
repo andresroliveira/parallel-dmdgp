@@ -28,10 +28,14 @@ static int alloc_mats(Instance *I) {
     I->dist = (double *)calloc(sz, sizeof(double));
     I->has = (unsigned char *)calloc(sz, sizeof(unsigned char));
     I->theta = (double *)calloc((size_t)(n + 1), sizeof(double));
+    I->ctheta = (double *)calloc((size_t)(n + 1), sizeof(double));
+    I->stheta = (double *)calloc((size_t)(n + 1), sizeof(double));
+    I->bond = (double *)calloc((size_t)(n + 1), sizeof(double));
     I->cw = (double *)calloc((size_t)(n + 1), sizeof(double));
     I->abs_sw = (double *)calloc((size_t)(n + 1), sizeof(double));
 
-    if (!I->dist || !I->has || !I->theta || !I->cw || !I->abs_sw)
+    if (!I->dist || !I->has || !I->theta || !I->cw || !I->abs_sw ||
+        !I->ctheta || !I->stheta || !I->bond)
         return 0;
     return 1;
 }
@@ -147,6 +151,10 @@ int instance_validate_dmdgp(const Instance *I) {
 int instance_precompute(Instance *I) {
     int n = I->n;
 
+    for (int k = 2; k <= n; k++) {
+        I->bond[k] = get_d(I, k - 1, k);
+    }
+
     // theta[k] for k=3..n
     for (int k = 3; k <= n; k++) {
         double d_k1_k = get_d(I, k - 1, k);
@@ -163,7 +171,9 @@ int instance_precompute(Instance *I) {
         if (c < -1.0)
             c = -1.0;
 
+        I->ctheta[k] = c;
         I->theta[k] = acos(c);
+        I->stheta[k] = sin(I->theta[k]);
     }
 
     // cw[k] for k=4..n (matches your Python)
@@ -221,5 +231,8 @@ void instance_free(Instance *I) {
     free(I->theta);
     free(I->cw);
     free(I->abs_sw);
+    free(I->ctheta);
+    free(I->stheta);
+    free(I->bond);
     memset(I, 0, sizeof(*I));
 }

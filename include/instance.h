@@ -19,9 +19,12 @@ typedef struct {
     unsigned char *has; // same size; 1 if dist present
 
     // Precomputed arrays (1..n)
-    double *theta;   // theta[k] for k>=3
-    double *cw;      // cw[k] = cos(omega_k) for k>=4
-    double *abs_sw;  // abs_sw[k] = |sin(omega_k)| for k>=4
+    double *theta;    // theta[k] for k>=3
+    double *ctheta;   // cos(theta[k])
+    double *stheta;   // sin(theta[k])
+    double *cw;       // cw[k] = cos(omega_k) for k>=4
+    double *abs_sw;   // abs_sw[k] = |sin(omega_k)| for k>=4
+    double *bond;     // Bond lengths (2..n): bond[k] = d[k-1][k]
 } Instance;
 
 // Load file, allocate matrices, store edges/distances.

@@ -39,9 +39,9 @@ void geom_build_points_mat4(const Instance *I, uint64_t k, Vec3 *x_out) {
     B2.a[3][3] = 1.0;
 
     // B3 depends on theta[3] and d23
-    double ct = cos(th3);
-    double st = sin(th3);
-    double di = d23;
+    double ct = I->ctheta[3];
+    double st = I->stheta[3];
+    double di = I->bond[3]; // = d[2][3]
 
     // B3 = [[-ct, -st, 0, -di*ct],
     //       [ st, -ct, 0,  di*st],
@@ -75,10 +75,9 @@ void geom_build_points_mat4(const Instance *I, uint64_t k, Vec3 *x_out) {
         int bit_index = n - t;
         uint64_t bit = (k >> bit_index) & 1ULL;
 
-        double th = I->theta[t];
-        double ct_t = cos(th);
-        double st_t = sin(th);
-        double di_t = d_ij(I, t - 1, t);
+        double ct_t = I->ctheta[t];
+        double st_t = I->stheta[t];
+        double di_t = I->bond[t];
 
         double cw = I->cw[t];
         double abs_sw = I->abs_sw[t];

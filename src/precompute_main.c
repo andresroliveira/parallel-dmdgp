@@ -6,6 +6,11 @@ static void dump_precompute(const Instance *I) {
 
     printf("n=%d m=%d\n", I->n, I->m);
 
+    printf("\n Bond lengths (k=2..n):\n");
+    for (int k = 2; k <= n; k++) {
+        printf("bond[%d]=%.12f\n", k, I->bond[k]);
+    }
+
     printf("\nTheta (k=3..n):\n");
     for (int k = 3; k <= n; k++) {
         printf("theta[%d]=%.12f\n", k, I->theta[k]);
