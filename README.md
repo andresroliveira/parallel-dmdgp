@@ -20,6 +20,7 @@ For each bitmask `k` with `m = n-3` bits:
 - `g(h(k))` scores constraint violations:
 
 $$ g(x) = \sum_{(u,v,d_{u,v})\in E} (\|x_u-x_v\|^2 - d_{u,v}^2)^2 $$
+
 - We search for any mask such that `g(h(k)) <= delta`.
 
 This repository currently returns the **first found** solution `k`.
